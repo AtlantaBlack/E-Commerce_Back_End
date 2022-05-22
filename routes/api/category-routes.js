@@ -12,12 +12,12 @@ router.get('/', async (req, res) => {
     });
 
     if (!categoryData) {
-      return res.status(404).json({ "message": "No categories found." });
+      return res.status(200).json({ "message": "No categories exist." });
     }
 
     res.status(200).json(categoryData);
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json({ error, "message": "Something went wrong." });
   }
 });
 
@@ -26,17 +26,17 @@ router.get('/:id', async (req, res) => {
   // be sure to include its associated Products
   try {
     const categoryId = req.params.id;
-    const errorMsg = `No category found with ID ${categoryId}`;
+    const errorMsg = `Category with ID ${categoryId} could not be found.`;
 
-    const selectedCategoryById = await Category.findByPk(req.params.id, {
+    const selectedCategoryData = await Category.findByPk(req.params.id, {
       include: { model: Product }
     });
 
-    if (!selectedCategoryById) {
+    if (!selectedCategoryData) {
       return res.status(404).json({ "message": errorMsg });
     }
 
-    res.status(200).json(selectedCategoryById);
+    res.status(200).json(selectedCategoryData);
   } catch (error) {
     res.status(500).json({ error, "message": "Something went wrong." });
   }
@@ -64,7 +64,7 @@ router.put('/:id', async (req, res) => {
   // update a category by its `id` value
   try {
     const categoryId = req.params.id;
-    const errorMsg = `Update failed because Category ${categoryId} could not be found.`;
+    const errorMsg = `Update failed because Category with ID ${categoryId} could not be found.`;
 
     const { category_name } = req.body;
 
@@ -79,7 +79,6 @@ router.put('/:id', async (req, res) => {
       }
     );
 
-    console.log(categoryData);
     if (!categoryData[0]) {
       return res.status(404).json({ "message": errorMsg });
     }
