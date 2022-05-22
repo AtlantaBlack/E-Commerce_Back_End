@@ -15,11 +15,11 @@ router.get('/', async (req, res) => {
       ]
     });
     if (!productsData) {
-      return res.status(404).json({ "message": "No products found." });
+      return res.status(200).json({ "message": "No products exist" });
     }
     res.status(200).json(productsData);
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json({ error, "message": "Something went wrong" });
   }
 });
 
@@ -29,25 +29,25 @@ router.get('/:id', async (req, res) => {
   // be sure to include its associated Category and Tag data
   try {
     const productId = req.params.id;
-    const errorMsg = `No product found with ID ${productId}`;
+    const errorMsg = `Product with ID ${productId} could not be found`;
 
-    const selectedProductById = await Product.findByPk(req.params.id, {
+    const selectedProductData = await Product.findByPk(req.params.id, {
       include: [
         { model: Category },
         { model: Tag }
       ]
     })
-    if (!selectedProductById) {
+    if (!selectedProductData) {
       return res.status(404).json({ "message": errorMsg });
     }
-    res.status(200).json(selectedProductById);
+    res.status(200).json(selectedProductData);
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json({ error, "message": "Something went wrong" });
   }
 });
 
 // create new product
-router.post('/', async (req, res) => {
+router.post('/', (req, res) => {
   /* req.body should look like this...
     {
       product_name: "Basketball",
@@ -57,16 +57,15 @@ router.post('/', async (req, res) => {
     }
   */
 
-  const input = req.body;
   const {
     product_name, price, stock, category_id, tagIds
-  } = input;
+  } = req.body;
 
   if (!product_name || !price || !stock || !category_id) {
-    return res.status(400).json({ "message": "Please enter a valid product name, price, category ID, and/or stock count." });
+    return res.status(400).json({ "message": "Please enter a valid product name, price, category ID, and/or stock count" });
   }
 
-  Product.create(input)
+  Product.create(req.body)
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
       if (tagIds.length) {
@@ -82,14 +81,26 @@ router.post('/', async (req, res) => {
       res.status(200).json(product);
     })
     .then((productTagIds) => res.status(200).json(productTagIds))
-    .catch((err) => {
-      console.log(err);
-      res.status(400).json(err);
+    .catch((error) => {
+      console.log(error);
+      res.status(400).json({
+        error, "message": "Something went wrong"
+      });
     });
 });
 
 // update product
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
+
+  const productId = req.params.id;
+  const errorMsg = `Update failed because Product with ID ${productId} could not be found`;
+
+  const product = await Product.findByPk(productId);
+
+  if (!product) {
+    return res.status(404).json({ "message": errorMsg });
+  }
+
   // update product data
   Product.update(req.body, {
     where: {
@@ -101,8 +112,14 @@ router.put('/:id', (req, res) => {
       return ProductTag.findAll({ where: { product_id: req.params.id } });
     })
     .then((productTags) => {
+
       // get list of current tag_ids
       const productTagIds = productTags.map(({ tag_id }) => tag_id);
+
+      if (!req.body.tagIds) {
+        return productTagIds;
+      }
+
       // create filtered list of new tag_ids
       const newProductTags = req.body.tagIds
         .filter((tag_id) => !productTagIds.includes(tag_id))
@@ -123,10 +140,15 @@ router.put('/:id', (req, res) => {
         ProductTag.bulkCreate(newProductTags),
       ]);
     })
-    .then((updatedProductTags) => res.json(updatedProductTags))
-    .catch((err) => {
-      // console.log(err);
-      res.status(400).json(err);
+    .then((updatedProductTags) => {
+      res.status(200).json({
+        "message": "Successfully updated Product", updatedProductTags
+      });
+    })
+    .catch((error) => {
+      console.log(`\n------ ERROR`);
+      console.log(error);
+      res.status(400).json({ error, "message": "Something went wrong" });
     });
 });
 

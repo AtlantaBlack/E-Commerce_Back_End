@@ -12,12 +12,12 @@ router.get('/', async (req, res) => {
     });
 
     if (!categoryData) {
-      return res.status(200).json({ "message": "No categories exist." });
+      return res.status(200).json({ "message": "No categories exist" });
     }
 
     res.status(200).json(categoryData);
   } catch (error) {
-    res.status(500).json({ error, "message": "Something went wrong." });
+    res.status(500).json({ error, "message": "Something went wrong" });
   }
 });
 
@@ -26,7 +26,7 @@ router.get('/:id', async (req, res) => {
   // be sure to include its associated Products
   try {
     const categoryId = req.params.id;
-    const errorMsg = `Category with ID ${categoryId} could not be found.`;
+    const errorMsg = `Category with ID ${categoryId} could not be found`;
 
     const selectedCategoryData = await Category.findByPk(req.params.id, {
       include: { model: Product }
@@ -38,7 +38,7 @@ router.get('/:id', async (req, res) => {
 
     res.status(200).json(selectedCategoryData);
   } catch (error) {
-    res.status(500).json({ error, "message": "Something went wrong." });
+    res.status(500).json({ error, "message": "Something went wrong" });
   }
 });
 
@@ -49,7 +49,7 @@ router.post('/', async (req, res) => {
     const { category_name } = input;
 
     if (!category_name) {
-      return res.status(400).json({ "message": "Please add a category name." });
+      return res.status(400).json({ "message": "Please add a category name" });
     }
 
     const newCategory = await Category.create(input);
@@ -64,7 +64,7 @@ router.put('/:id', async (req, res) => {
   // update a category by its `id` value
   try {
     const categoryId = req.params.id;
-    const errorMsg = `Update failed because Category with ID ${categoryId} could not be found.`;
+    const errorMsg = `Update failed because Category with ID ${categoryId} could not be found`;
 
     const { category_name } = req.body;
 
@@ -84,7 +84,7 @@ router.put('/:id', async (req, res) => {
     }
 
     if (!category_name) {
-      return res.status(400).json({ "message": "Please enter a valid category name." });
+      return res.status(400).json({ "message": "Please enter a valid category name" });
     }
 
     res.status(200).json(categoryData);

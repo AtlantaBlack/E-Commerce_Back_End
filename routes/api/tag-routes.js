@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
         { model: Product }
     });
     if (!tagsData) {
-      return res.status(404).json({ "message": "No tags found." });
+      return res.status(200).json({ "message": "No tags exist" });
     }
     res.status(200).json(tagsData);
   } catch (error) {
@@ -48,13 +48,13 @@ router.post('/', async (req, res) => {
     const { tag_name } = input;
 
     if (!tag_name) {
-      return res.status(400).json({ "message": "Please add a tag name." });
+      return res.status(400).json({ "message": "Please add a tag name" });
     }
 
     const newTag = await Tag.create(input);
     res.status(200).json(newTag);
   } catch (error) {
-    res.status(500).json({ "message": "Couldn't create a new tag." });
+    res.status(500).json({ "message": "Couldn't create a new tag" });
   }
 });
 
