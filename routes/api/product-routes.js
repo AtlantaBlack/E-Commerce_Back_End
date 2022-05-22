@@ -31,7 +31,7 @@ router.get('/:id', async (req, res) => {
     const productId = req.params.id;
     const errorMsg = `Product with ID ${productId} could not be found`;
 
-    const selectedProductData = await Product.findByPk(req.params.id, {
+    const selectedProductData = await Product.findByPk(productId, {
       include: [
         { model: Category },
         { model: Tag }
@@ -104,12 +104,12 @@ router.put('/:id', async (req, res) => {
   // update product data
   Product.update(req.body, {
     where: {
-      id: req.params.id,
+      id: productId,
     },
   })
     .then((product) => {
       // find all associated tags from ProductTag
-      return ProductTag.findAll({ where: { product_id: req.params.id } });
+      return ProductTag.findAll({ where: { product_id: productId } });
     })
     .then((productTags) => {
 
@@ -125,7 +125,7 @@ router.put('/:id', async (req, res) => {
         .filter((tag_id) => !productTagIds.includes(tag_id))
         .map((tag_id) => {
           return {
-            product_id: req.params.id,
+            product_id: productId,
             tag_id,
           };
         });
@@ -148,7 +148,10 @@ router.put('/:id', async (req, res) => {
     .catch((error) => {
       console.log(`\n------ ERROR`);
       console.log(error);
-      res.status(400).json({ error, "message": "Something went wrong" });
+      res.status(400).json({
+        error,
+        "message": "Something went wrong"
+      });
     });
 });
 
