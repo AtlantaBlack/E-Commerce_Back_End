@@ -10,15 +10,33 @@ router.get('/', async (req, res) => {
       const categoryData = await Category.findAll({
           include: { model: Product }
       });
+
+      if (!categoryData) {
+          return res.status(404).json({ "message": "No categories available." });
+      }
+
       res.status(200).json(categoryData);
   } catch (error) {
       res.status(500).json(error);
   }
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   // find one category by its `id` value
   // be sure to include its associated Products
+  try {
+      const selectedCategory = await Category.findByPk(req.params.id, {
+          include: { model: Product }
+      });
+
+      if (!selectedCategory) {
+          return res.status(404).json({ "message": "Category not found or does not exist." });
+      }
+
+      res.status(200).json(selectedCategory);
+  } catch (error) {
+      res.status(500).json(error);
+  }
 });
 
 router.post('/', (req, res) => {
