@@ -8,18 +8,18 @@ router.get('/', async (req, res) => {
   // find all products
   // be sure to include its associated Category and Tag data
   try {
-      const productsData = await Product.findAll({
-          include: [
-              { model: Category },
-              { model: Tag }
-          ]
-      });
-      if (!productsData) {
-          return res.status(404).json({ "message": "No products found." });
-      }
-      res.status(200).json(productsData);
+    const productsData = await Product.findAll({
+      include: [
+        { model: Category },
+        { model: Tag }
+      ]
+    });
+    if (!productsData) {
+      return res.status(404).json({ "message": "No products found." });
+    }
+    res.status(200).json(productsData);
   } catch (error) {
-      res.status(500).json(error);
+    res.status(500).json(error);
   }
 });
 
@@ -28,26 +28,26 @@ router.get('/:id', async (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
   try {
-    const productId = req.params.id; 
+    const productId = req.params.id;
     const errorMsg = `No product found with ID ${productId}`;
 
-      const selectedProductById = await Product.findByPk(req.params.id, {
-          include: [
-              { model: Category },
-              { model: Tag }
-          ]
-      })
-      if (!selectedProductById) {
-          return res.status(404).json({ "message": errorMsg });
-      }
-      res.status(200).json(selectedProductById);
+    const selectedProductById = await Product.findByPk(req.params.id, {
+      include: [
+        { model: Category },
+        { model: Tag }
+      ]
+    })
+    if (!selectedProductById) {
+      return res.status(404).json({ "message": errorMsg });
+    }
+    res.status(200).json(selectedProductById);
   } catch (error) {
-      res.status(500).json(error);
+    res.status(500).json(error);
   }
 });
 
 // create new product
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   /* req.body should look like this...
     {
       product_name: "Basketball",
@@ -56,11 +56,21 @@ router.post('/', (req, res) => {
       tagIds: [1, 2, 3, 4]
     }
   */
-  Product.create(req.body)
+
+  const input = req.body;
+  const {
+    product_name, price, stock, category_id, tagIds
+  } = input;
+
+  if (!product_name || !price || !stock || !category_id) {
+    return res.status(400).json({ "message": "Please enter a valid product name, price, category ID, and/or stock count." });
+  }
+
+  Product.create(input)
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
-      if (req.body.tagIds.length) {
-        const productTagIdArr = req.body.tagIds.map((tag_id) => {
+      if (tagIds.length) {
+        const productTagIdArr = tagIds.map((tag_id) => {
           return {
             product_id: product.id,
             tag_id,
