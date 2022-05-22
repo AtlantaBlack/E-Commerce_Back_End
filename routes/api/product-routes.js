@@ -28,6 +28,9 @@ router.get('/:id', async (req, res) => {
   // find a single product by its `id`
   // be sure to include its associated Category and Tag data
   try {
+    const productId = req.params.id; 
+    const errorMsg = `No product found with ID ${productId}`;
+
       const selectedProductById = await Product.findByPk(req.params.id, {
           include: [
               { model: Category },
@@ -35,7 +38,7 @@ router.get('/:id', async (req, res) => {
           ]
       })
       if (!selectedProductById) {
-          return res.status(404).json({ "message": "Product not found." });
+          return res.status(404).json({ "message": errorMsg });
       }
       res.status(200).json(selectedProductById);
   } catch (error) {
