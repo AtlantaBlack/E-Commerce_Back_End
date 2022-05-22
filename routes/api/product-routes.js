@@ -15,11 +15,16 @@ router.get('/', async (req, res) => {
       ]
     });
     if (!productsData) {
-      return res.status(200).json({ "message": "No products exist" });
+      return res.status(200).json({
+        "message": "No products exist"
+      });
     }
     res.status(200).json(productsData);
   } catch (error) {
-    res.status(500).json({ error, "message": "Something went wrong" });
+    res.status(500).json({
+      "message": "Something went wrong...",
+      error
+    });
   }
 });
 
@@ -38,11 +43,16 @@ router.get('/:id', async (req, res) => {
       ]
     })
     if (!selectedProductData) {
-      return res.status(404).json({ "message": errorMsg });
+      return res.status(404).json({
+        "message": errorMsg
+      });
     }
     res.status(200).json(selectedProductData);
   } catch (error) {
-    res.status(500).json({ error, "message": "Something went wrong" });
+    res.status(500).json({
+      "message": "Something went wrong...",
+      error
+    });
   }
 });
 
@@ -62,12 +72,15 @@ router.post('/', (req, res) => {
   } = req.body;
 
   if (!product_name || !price || !stock || !category_id) {
-    return res.status(400).json({ "message": "Please enter a valid product name, price, category ID, and/or stock count" });
+    return res.status(400).json({
+      "message": "Please enter a valid product name, price, category ID, and/or stock count"
+    });
   }
 
   Product.create(req.body)
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
+
       if (tagIds.length) {
         const productTagIdArr = tagIds.map((tag_id) => {
           return {
@@ -75,6 +88,7 @@ router.post('/', (req, res) => {
             tag_id,
           };
         });
+
         return ProductTag.bulkCreate(productTagIdArr);
       }
       // if no product tags, just respond
@@ -82,9 +96,11 @@ router.post('/', (req, res) => {
     })
     .then((productTagIds) => res.status(200).json(productTagIds))
     .catch((error) => {
-      console.log(error);
-      res.status(400).json({
-        error, "message": "Something went wrong"
+      // console.log(`\n---- ERROR`)
+      // console.log(error);
+      res.status(500).json({
+        "message": "Something went wrong...",
+        error
       });
     });
 });
@@ -98,7 +114,9 @@ router.put('/:id', async (req, res) => {
   const product = await Product.findByPk(productId);
 
   if (!product) {
-    return res.status(404).json({ "message": errorMsg });
+    return res.status(404).json({
+      "message": errorMsg
+    });
   }
 
   // update product data
@@ -142,21 +160,47 @@ router.put('/:id', async (req, res) => {
     })
     .then((updatedProductTags) => {
       res.status(200).json({
-        "message": "Successfully updated Product", updatedProductTags
+        "message": "Product successfully updated", updatedProductTags
       });
     })
     .catch((error) => {
-      console.log(`\n------ ERROR`);
-      console.log(error);
-      res.status(400).json({
-        error,
-        "message": "Something went wrong"
+      // console.log(`\n------ ERROR`);
+      // console.log(error);
+      res.status(500).json({
+        "message": "Something went wrong...",
+        error
       });
     });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   // delete one product by its `id` value
+  try {
+    const productId = req.params.id;
+    const errorMsg = `Delete failed because Product with ID ${productId} could not be found`;
+
+    const productData = await Product.destroy({
+      where: {
+        id: productId
+      }
+    });
+
+    if (!productData) {
+      return res.status(404).json({
+        "message": errorMsg
+      });
+    }
+
+    res.status(200).json({
+      "message": "Product successfully deleted",
+      productData
+    });
+  } catch (error) {
+    res.status(500).json({
+      "message": "Something went wrong...",
+      error
+    });
+  }
 });
 
 module.exports = router;

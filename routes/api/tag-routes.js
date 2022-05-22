@@ -12,13 +12,15 @@ router.get('/', async (req, res) => {
         { model: Product }
     });
     if (!tagsData) {
-      return res.status(200).json({ "message": "No tags exist" });
+      return res.status(200).json({
+        "message": "No tags exist"
+      });
     }
     res.status(200).json(tagsData);
   } catch (error) {
     res.status(500).json({
-      error,
-      "message": "Something went wrong"
+      "message": "Something went wrong...",
+      error
     });
   }
 });
@@ -28,21 +30,24 @@ router.get('/:id', async (req, res) => {
   // be sure to include its associated Product data
   try {
     const tagId = req.params.id;
-    const errorMsg = `No tag found with ID ${tagId}`;
+    const errorMsg = `Tag with ID ${tagId} could not be found`;
 
     const selectedTagById = await Tag.findByPk(tagId, {
       include: [
         { model: Product }
       ]
-    })
+    });
+
     if (!selectedTagById) {
-      return res.status(404).json({ "message": errorMsg })
+      return res.status(404).json({
+        "message": errorMsg
+      });
     }
     res.status(200).json(selectedTagById);
   } catch (error) {
     res.status(500).json({
-      error,
-      "message": "Something went wrong"
+      "message": "Something went wrong...",
+      error
     });
   }
 });
@@ -53,13 +58,19 @@ router.post('/', async (req, res) => {
     const { tag_name } = req.body;
 
     if (!tag_name) {
-      return res.status(400).json({ "message": "Please add a tag name" });
+      return res.status(400).json({
+        "message": "Please add a tag name"
+      });
     }
 
     const newTag = await Tag.create(req.body);
+
     res.status(200).json(newTag);
   } catch (error) {
-    res.status(500).json({ "message": "Couldn't create a new tag" });
+    res.status(500).json({
+      "message": "Something went wrong...",
+      error
+    });
   }
 });
 
@@ -73,36 +84,66 @@ router.put('/:id', async (req, res) => {
     const { tag_name } = req.body;
 
     if (!tag_name) {
-      return res.status(400).json({ "message": "Please enter a valid tag name" });
+      return res.status(400).json({
+        "message": "Please enter a valid tag name"
+      });
     }
 
     const updatedTagData = await Tag.update(
-      {
-        tag_name
-      },
+      { tag_name },
       {
         where: {
           id: tagId
         }
       });
 
-    console.log(updatedTagData);
-
     if (!updatedTagData[0]) {
-      return res.status(404).json({ "message": errorMsg });
+      return res.status(404).json({
+        "message": errorMsg
+      });
     }
 
-    res.status(200).json(updatedTagData);
+    res.status(200).json({
+      "message": "Tag successfully updated",
+      updatedTagData
+    });
   } catch (error) {
     res.status(500).json({
-      error,
-      "message": "Something went wrong"
+      "message": "Something went wrong...",
+      error
     });
   }
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   // delete on tag by its `id` value
+  try {
+
+    const tagId = req.params.id;
+    const errorMsg = `Delete failed because Tag with ID ${tagId} could not be found`;
+
+    const tagData = await Tag.destroy({
+      where: {
+        id: tagId
+      }
+    });
+
+    if (!tagData) {
+      return res.status(404).json({
+        "message": errorMsg
+      });
+    }
+
+    res.status(200).json({
+      "message": "Tag successfully deleted",
+      tagData
+    });
+  } catch (error) {
+    res.status(500).json({
+      "message": "Something went wrong...",
+      error
+    });
+  }
 });
 
 module.exports = router;

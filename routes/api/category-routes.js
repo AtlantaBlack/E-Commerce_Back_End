@@ -12,14 +12,16 @@ router.get('/', async (req, res) => {
     });
 
     if (!categoryData) {
-      return res.status(200).json({ "message": "No categories exist" });
+      return res.status(200).json({
+        "message": "No categories exist"
+      });
     }
 
     res.status(200).json(categoryData);
   } catch (error) {
     res.status(500).json({
-      error,
-      "message": "Something went wrong"
+      "message": "Something went wrong...",
+      error
     });
   }
 });
@@ -36,14 +38,16 @@ router.get('/:id', async (req, res) => {
     });
 
     if (!selectedCategoryData) {
-      return res.status(404).json({ "message": errorMsg });
+      return res.status(404).json({
+        "message": errorMsg
+      });
     }
 
     res.status(200).json(selectedCategoryData);
   } catch (error) {
     res.status(500).json({
-      error,
-      "message": "Something went wrong"
+      "message": "Something went wrong...",
+      error
     });
   }
 });
@@ -54,7 +58,9 @@ router.post('/', async (req, res) => {
     const { category_name } = req.body;
 
     if (!category_name) {
-      return res.status(400).json({ "message": "Please add a category name" });
+      return res.status(400).json({
+        "message": "Please add a category name"
+      });
     }
 
     const newCategory = await Category.create(req.body);
@@ -62,8 +68,8 @@ router.post('/', async (req, res) => {
     res.status(200).json(newCategory);
   } catch (error) {
     res.status(500).json({
-      error,
-      "message": "Something went wrong"
+      "message": "Something went wrong...",
+      error
     });
   }
 });
@@ -77,13 +83,13 @@ router.put('/:id', async (req, res) => {
     const { category_name } = req.body;
 
     if (!category_name) {
-      return res.status(400).json({ "message": "Please enter a valid category name" });
+      return res.status(400).json({
+        "message": "Please enter a valid category name"
+      });
     }
 
     const updatedCategoryData = await Category.update(
-      {
-        category_name
-      },
+      { category_name },
       {
         where: {
           id: categoryId
@@ -92,14 +98,19 @@ router.put('/:id', async (req, res) => {
     );
 
     if (!updatedCategoryData[0]) {
-      return res.status(404).json({ "message": errorMsg });
+      return res.status(404).json({
+        "message": errorMsg
+      });
     }
 
-    res.status(200).json(updatedCategoryData);
+    res.status(200).json({
+      "message": "Category successfully updated",
+      updatedCategoryData
+    });
   } catch (error) {
     res.status(500).json({
-      error,
-      "message": "Something went wrong"
+      "message": "Something went wrong...",
+      error
     });
   }
 });
@@ -109,24 +120,29 @@ router.delete('/:id', async (req, res) => {
 
   try {
 
-    // const categoryId = req.params.id;
-
-    // const errorMsg = `Delete failed because Category with ID ${categoryId} could not be found`;
+    const categoryId = req.params.id;
+    const errorMsg = `Delete failed because Category with ID ${categoryId} could not be found`;
 
     const categoryData = await Category.destroy({
       where: {
-        id: req.params.id
+        id: categoryId
       }
     });
 
-    console.log(`\n---- CATEGORY DATA`)
-    console.log(categoryData);
+    if (!categoryData) {
+      return res.status(404).json({
+        "message": errorMsg
+      });
+    }
 
-    res.status(200).json(categoryData);
+    res.status(200).json({
+      "message": "Category successfully deleted",
+      categoryData
+    });
   } catch (error) {
     res.status(500).json({
-      error,
-      "message": "Something went wrong"
+      "message": "Something went wrong...",
+      error
     });
   }
 });
