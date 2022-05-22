@@ -38,7 +38,7 @@ router.get('/:id', async (req, res) => {
 
     res.status(200).json(selectedCategoryById);
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).json({ error, "message": "Something went wrong." });
   }
 });
 
@@ -56,12 +56,43 @@ router.post('/', async (req, res) => {
 
     res.status(200).json(newCategory);
   } catch (error) {
-    res.status(500).json({ "message": "Couldn't add new category." });
+    res.status(500).json(error);
   }
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   // update a category by its `id` value
+  try {
+    const categoryId = req.params.id;
+    const errorMsg = `Update failed because Category ${categoryId} could not be found.`;
+
+    const { category_name } = req.body;
+
+    const categoryData = await Category.update(
+      {
+        category_name: category_name
+      },
+      {
+        where: {
+          id: categoryId
+        }
+      }
+    );
+
+    console.log(categoryData);
+    if (!categoryData[0]) {
+      return res.status(404).json({ "message": errorMsg });
+    }
+
+    if (!category_name) {
+      return res.status(400).json({ "message": "Please enter a valid category name." });
+    }
+
+    res.status(200).json(categoryData);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+
 });
 
 router.delete('/:id', (req, res) => {
