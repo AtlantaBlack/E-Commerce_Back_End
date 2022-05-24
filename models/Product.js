@@ -21,7 +21,7 @@ Product.init(
             allowNull: false
         },
         price: {
-            type: DataTypes.DECIMAL(10, 2),
+            type: DataTypes.DECIMAL(10, 2), // add precision to decimal: 10 total numbers including 2 as decimal values
             allowNull: false,
             validate: {
                 isDecimal: true
