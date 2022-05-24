@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
         "message": "No categories exist"
       });
     }
-    // send data for all categories
+    // send data for all found categories
     res.status(200).json(categoryData);
   } catch (error) {
     // if error occurs, show msg and error
@@ -91,11 +91,6 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   // update a category by its `id` value
-  /* req.body structure:
-    {
-      "category_name": "example updated name"
-    }
-  */
   try {
     // create variables to use later
     const categoryId = req.params.id;
